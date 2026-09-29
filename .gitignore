@@ -6,3 +6,4 @@ target/
 logs/
 *.duckdb
 *.duckdb.wal
+.user.yml
