@@ -1,0 +1,18 @@
+version: 2
+
+models:
+  - name: stg_forecast
+    description: "Tidied forecast snapshots: one row per ingested snapshot, location, and forecast hour."
+    columns:
+      - name: location
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['oslo', 'bergen']
+      - name: forecast_time
+        data_tests: [not_null]
+      - name: ingested_at
+        data_tests: [not_null]
+      - name: air_temperature
+        data_tests: [not_null]

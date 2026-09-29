@@ -1,0 +1,13 @@
+name: met_weather_pipeline
+version: "1.0.0"
+profile: met_weather
+
+model-paths: ["models"]
+clean-targets: ["target"]
+
+models:
+  met_weather_pipeline:
+    staging:
+      +materialized: view
+    marts:
+      +materialized: table
