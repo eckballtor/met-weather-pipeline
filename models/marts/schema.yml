@@ -1,0 +1,25 @@
+version: 2
+
+models:
+  - name: fct_forecast_history
+    description: "Serving fact: every forecast claim ever ingested, per snapshot, location, and forecast hour."
+    columns:
+      - name: ingested_at
+        data_tests: [not_null]
+      - name: location
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['oslo', 'bergen']
+      - name: forecast_time
+        data_tests: [not_null]
+      - name: air_temperature
+        data_tests: [not_null]
+  - name: fct_forecast_revisions
+    description: "Drift fact: temperature revisions for identical (location, forecast hour) between consecutive snapshots."
+    columns:
+      - name: snapshot_before
+        data_tests: [not_null]
+      - name: temperature_revision
+        data_tests: [not_null]
