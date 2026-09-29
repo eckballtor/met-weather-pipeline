@@ -9,4 +9,4 @@ select
     cast(precipitation_next_1h as double) as precipitation_next_1h,
     symbol_next_1h,
     cast(ingested_at as timestamp) as ingested_at
-from read_parquet('data/raw/forecasts_*.parquet')
+from read_parquet('data/snapshots/forecasts_*.parquet')

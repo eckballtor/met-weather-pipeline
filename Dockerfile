@@ -13,6 +13,7 @@ RUN uv sync --frozen --no-dev
 
 # Project code.
 COPY profiles.yml dbt_project.yml ./
+COPY data/ data/
 COPY ingest/ ingest/
 COPY models/ models/
 COPY tests/ tests/

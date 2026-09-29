@@ -18,7 +18,7 @@ LOCATIONS = {
     "oslo": (59.9139, 10.7522),
     "bergen": (60.3913, 5.3221),
 }
-RAW_DIR = Path("data/raw")
+RAW_DIR = Path("data/snapshots")
 
 
 def fetch_snapshot(name: str, lat: float, lon: float) -> pd.DataFrame:

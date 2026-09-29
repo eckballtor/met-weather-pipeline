@@ -1,6 +1,5 @@
 .venv
 .git
-data
 target
 logs
 warehouse.duckdb
