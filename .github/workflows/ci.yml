@@ -1,0 +1,25 @@
+name: CI
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - name: Sync dependencies
+        run: uv sync --frozen
+      - name: dbt build (models + 16 data tests)
+        run: uv run dbt build --profiles-dir .
+      - name: API smoke test
+        run: |
+          uv run uvicorn api.main:app --port 8000 &
+          for i in $(seq 1 30); do
+            curl -sf http://127.0.0.1:8000/health && break
+            sleep 1
+          done
+          curl -sf http://127.0.0.1:8000/health > /dev/null
+          curl -sf http://127.0.0.1:8000/locations | grep -q oslo
+          curl -sf http://127.0.0.1:8000/revisions/oslo > /dev/null
