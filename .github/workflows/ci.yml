@@ -13,7 +13,7 @@ jobs:
           enable-cache: false
       - name: Sync dependencies
         run: uv sync --frozen
-      - name: dbt build (models + 16 data tests)
+      - name: dbt build
         run: uv run dbt build --profiles-dir .
       - name: API smoke test
         run: |

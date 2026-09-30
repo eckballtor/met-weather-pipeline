@@ -2,7 +2,7 @@ name: Nightly snapshot
 
 on:
   schedule:
-    - cron: '0 4 * * *'   # 04:00 UTC = 05:00/06:00 Oslo
+    - cron: '0 4 * * *'   # 04:00 UTC
   workflow_dispatch: {}    # manual trigger for testing
 
 permissions:
@@ -26,7 +26,7 @@ jobs:
       - name: Ingest fresh snapshot
         run: uv run python -m ingest.ingest
 
-      - name: Validate with dbt (16 tests)
+      - name: Validate with dbt
         run: uv run dbt build --profiles-dir .
 
       - name: Commit and push the snapshot
