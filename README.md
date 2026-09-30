@@ -5,7 +5,7 @@
   
 **Live API:** https://met-weather-pipeline.onrender.com
 
-This project runs a small data pipeline that collects public weather forecasts from met.no for Oslo and Bergen. It stores each collection run as a timestamped Parquet snapshot, and models the accumulated snapshots into a DuckDB warehouse with dbt. Because each forecast for a given hour is captured repeatedly over time, the data allows a concrete question: how did the forecast for a specific hour change as newer forecasts arrived? The warehouse holds the answer as a revision history. Data-quality tests gate every build, a read-only FastAPI serves the results as JSON, GitHub Actions runs CI on each push, and a nightly workflow collects and validates a new snapshot on its own. The service is deployed from this repository and runs at met-weather-pipeline.onrender.com.
+This project runs a small data pipeline that collects public weather forecasts from [met.no](https://www.met.no/) for Oslo and Bergen. It stores each collection run as a timestamped Parquet snapshot, and models the accumulated snapshots into a DuckDB warehouse with dbt. Because each forecast for a given hour is captured repeatedly over time, the data allows a concrete question: how did the forecast for a specific hour change as newer forecasts arrived? The warehouse holds the answer as a revision history. Data-quality tests gate every build, a read-only FastAPI serves the results as JSON, GitHub Actions runs CI on each push, and a nightly workflow collects and validates a new snapshot on its own. The service is deployed from this repository and runs at [met-weather-pipeline.onrender.com](https://met-weather.pipeline.onrender.com).
 
 
 
@@ -23,8 +23,9 @@ The staging model unions every committed snapshot and dbt models them into two t
 
 ## Architecture
 
-The repository is organized in five layers, each in its own directory: ingestion (`ingest/`), dbt models (`models/`), the warehouse (warehouse.duckdb is buildt by dbt and therefore not committed), the API (`api/`), and automation (`.github/workflows/`). Data moves in one direction: met.no → Parquet snapshot → dbt staging and marts → warehouse → API. Nothing in the serving path writes anything. The API opens the warehouse read-only, and all modeling happens in dbt before anything is served.
+The repository is organized in five layers, each in its own directory: ingestion (`ingest/`), dbt models (`models/`), the warehouse (warehouse.duckdb is built by dbt and therefore not committed), the API (`api/`), and automation (`.github/workflows/`). Data moves in one direction: met.no → Parquet snapshot → dbt staging and marts → warehouse → API. Nothing in the serving path writes anything. The API opens the warehouse read-only, and all modeling happens in dbt before anything is served.
 
+```mermaid
 flowchart LR
     subgraph INGEST["Ingestion"]
         A["met.no<br/>Locationforecast API"] --> B["ingest<br/>one Parquet snapshot per run"]
@@ -52,6 +53,7 @@ flowchart LR
         CI["CI on push"] -.-> DQ
         CI -.-> API
     end
+```
 
 - **Ingestion** (`ingest/ingest.py`): fetches met.no Locationforecast 2.0 (compact). No API key. Writes one timestamped Parquet snapshot per run.
 - **dbt models** (`models/`): `stg_forecast` is a view over all snapshots via one glob. `fct_forecast_history` materializes every claim ever made, enriched with `lead_time_hours`. `fct_forecast_revisions` pairs consecutive snapshots per (location, hour) with a `lag()` window and records the temperature change. Quality is asserted by 12 generic tests plus 1 custom SQL test.
@@ -78,17 +80,21 @@ flowchart LR
 
 Clone the repository and run:
 
-> uv sync --frozen # install locked dependencies
-> uv run python -m ingest.ingest # optional: fetch a fresh snapshot (optional because the versioned history is already committed)
-> uv run dbt build --profiles-dir . # build the warehouse and run all tests
-> uv run uvicorn api.main:app --port 8000 # serve the API on localhost:8000
+```bash
+> uv sync --frozen                           # install locked dependencies
+> uv run python -m ingest.ingest             # optional: fetch a fresh snapshot (because the versioned history is already committed)
+> uv run dbt build --profiles-dir .          # build the warehouse and run all tests
+> uv run uvicorn api.main:app --port 8000    # serve the API on localhost:8000
+```
 
 Alternatively, as one image: Building the image actually is a pipeline run. The resulting container serves a warehouse complete as of build time:
 
+```bash
 > docker build -t met-weather-pipeline .  
 > docker run -p 8000:8000 met-weather-pipeline
+```
 
-The API then is in both cases available at http://localhost:8000 with interactive documentation at /docs and revision analysis at /revisions/oslo.
+The API then is in both cases available at http://localhost:8000 with interactive documentation at `/docs` and revision analysis at `/revisions/oslo`.
 
 Alternatively, you can see the live deployment at: https://met-weather-pipeline.onrender.com/
 
