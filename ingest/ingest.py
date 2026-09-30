@@ -1,7 +1,8 @@
 """Ingestion stage: fetch one Locationforecast snapshot from met.no and store as Parquet.
 
-Each run captures what the forecast looked like at a point in time; the sequence of
-snapshots forms a forecast-history dataset, modeled downstream with dbt.
+Each run captures what the forecast looked like at a point in time;
+the sequence of snapshots forms a forecast-history dataset,
+modeled downstream with dbt.
 """
 from datetime import datetime, timezone
 from pathlib import Path
@@ -10,7 +11,7 @@ import duckdb
 import httpx
 import pandas as pd
 
-# met.no terms of use require an identifying User-Agent (project + contact).
+# met.no terms of use require an identifying User-Agent.
 USER_AGENT = "met-weather-pipeline/0.1 github.com/eckballtor/met-weather-pipeline"
 
 BASE_URL = "https://api.met.no/weatherapi/locationforecast/2.0/compact"
@@ -19,6 +20,7 @@ LOCATIONS = {
     "bergen": (60.3913, 5.3221),
 }
 RAW_DIR = Path("data/snapshots")
+# No API key. The met.no module is credential-free.
 
 
 def fetch_snapshot(name: str, lat: float, lon: float) -> pd.DataFrame:
@@ -55,8 +57,9 @@ def fetch_snapshot(name: str, lat: float, lon: float) -> pd.DataFrame:
 
 def main() -> None:
     RAW_DIR.mkdir(parents=True, exist_ok=True)
-    ingested_at = datetime.now(timezone.utc)
+    ingested_at = datetime.now(timezone.utc)  # one timestamp for the whole run
 
+    # loop through cities and stack results into table
     df = pd.concat(
         [fetch_snapshot(name, lat, lon) for name, (lat, lon) in LOCATIONS.items()],
         ignore_index=True,
