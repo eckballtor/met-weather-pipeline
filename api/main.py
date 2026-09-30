@@ -17,7 +17,7 @@ app = FastAPI(
 
 @app.get("/")
 def index() -> dict:
-    """Friendly landing: what this service is and what to click."""
+    """This is the self-describing landing page."""
     return {
         "service": "met-weather-pipeline",
         "description": "Forecast history and revision analytics from met.no "
@@ -33,6 +33,7 @@ def index() -> dict:
 
 
 def _warehouse() -> duckdb.DuckDBPyConnection:
+    """Internal helper: open the warehouse read-only and throw 503 if the file is missing."""
     if not WAREHOUSE.exists():
         raise HTTPException(
             status_code=503,
@@ -42,6 +43,7 @@ def _warehouse() -> duckdb.DuckDBPyConnection:
 
 
 def _rows(sql: str, params: list | None = None) -> list[dict]:
+    """Internal helper: run one read-only query and return JSON-safe dicts."""
     con = _warehouse()
     try:
         df = con.sql(sql, params=params or None).df()
