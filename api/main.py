@@ -15,6 +15,23 @@ app = FastAPI(
 )
 
 
+@app.get("/")
+def index() -> dict:
+    """Friendly landing: what this service is and what to click."""
+    return {
+        "service": "met-weather-pipeline",
+        "description": "Forecast history and revision analytics from met.no "
+        "snapshots, served from a dbt/DuckDB warehouse.",
+        "endpoints": {
+            "health": "/health",
+            "locations": "/locations",
+            "latest_forecast": "/forecasts/{location}/latest?limit=24",
+            "revisions": "/revisions/{location}?limit=10",
+            "interactive_docs": "/docs",
+        },
+    }
+
+
 def _warehouse() -> duckdb.DuckDBPyConnection:
     if not WAREHOUSE.exists():
         raise HTTPException(
