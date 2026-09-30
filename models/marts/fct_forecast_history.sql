@@ -1,7 +1,7 @@
 {{ config(materialized='table') }}
 
--- Serving fact: every forecast claim ever ingested, one row per
--- (snapshot, location, forecast hour).
+-- Serving fact: every forecast claim ever ingested.
+-- one row per (snapshot, location, forecast hour).
 select
     ingested_at,
     location,
